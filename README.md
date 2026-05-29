@@ -1,51 +1,129 @@
-# HospitalDB
+# Base de datos HospitalDB
+### Desarrollador
+**Devorah Alonso Hernandez**   
+Numero Control: 22760237
 
-Base de datos desarrollada en MySQL 8.0.46
+## Acceso y gestión de la base de datos
 
-## Requisitos
+### Requisitos
 
-- MySQL Server 8.0 o superior
-- MySQL Workbench (opcional)
+* Tener acceso autorizado a la VPN de Tailscale del proyecto.
+* Contar con credenciales SSH válidas.
+* Tener permisos para acceder al servidor y al contenedor Docker de MySQL.
 
-## Configuración usada
+### Tecnologías utilizadas
+* MySQL 8.0.46
+* Docker
+* Docker Compose
+
+### Configuración utilizada
 
 ```sql
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_0900_ai_ci;
 ```
+### Conexión al servidor
 
-## Cómo importar la base de datos
+Desde la terminal local, conectarse al servidor mediante SSH:
 
-### Opción 1 — MySQL Workbench
+```bash
+ssh db@100.73.30.52
+```
 
-1. Abrir MySQL Workbench
-2. Ir a:
-   Server → Data Import
+Ingresar la contraseña proporcionada por el administrador del proyecto.
 
-3. Seleccionar:
-   Import from Self-Contained File
+### Ubicación del repositorio
 
-4. Elegir:
-   DB_completa.sql
+Una vez dentro del servidor, acceder al repositorio de la base de datos:
 
-5. Presionar:
-   Start Import
+```bash
+cd /opt/clinica-app/Base-de-datos-Hospital
+```
+
+### Archivos principales del repositorio:
+
+```text
+DB_completa.sql
+README.md
+```
+## Gestión de la base de datos con Docker
+
+Verificar los contenedores activos:
+
+```bash
+docker ps
+```
+
+Ingresar al contenedor de MySQL:
+
+```bash
+docker exec -it mysql_db bash
+```
+
+Acceder al cliente MySQL:
+
+```bash
+mysql -u root -p
+```
+
+Ingresar la contraseña del usuario root proporcionada por el administrador.
+
+
+### Seleccionar la base de datos
+Una vez dentro de mysql seleccionar hospitaldb:   
+```sql
+USE hospitaldb;
+```
+
+A partir de este punto ya es posible:
+
+* Ejecutar consultas SQL
+* Modificar tablas
+* Crear o eliminar triggers
+* Importar archivos `.sql`
+* Administrar la base de datos
+* Los cambios realizados en MySQL se guardan automáticamente.
+
+
+
+### Respaldos automáticos
+
+El servidor realiza respaldos automáticos de la base de datos diariamente a las **2:00 AM**.
 
 ---
 
-### Opción 2 — Para crear solamente la estructura:
-Ejecuta los siguientes archivos en el orden mostrado:
-1. tablas.sql → creación de la base de datos y tablas
-2. indices.sql → creación de índices
-3. triggers.sql → triggers y validaciones
-4. vistas.sql→ vistas de apoyo
-5. (Opcional) inserts.sql  → datos de prueba para llenar tablas.
+## Estructura general de la base de datos
 
-## Usuarios existentes
-Los datos de prueba incluidos utilizan la contraseña:  
-```text
-123456
+La base de datos está diseñada bajo una arquitectura multi-tenant, donde cada clínica mantiene aislamiento lógico mediante el campo:
+
+```sql
+id_clinica_tenant
 ```
+
+Las principales entidades del sistema son:
+
+* usuario
+* paciente
+* doctores
+* cita
+* horarios_doctor
+* bloqueo_horario
+* precios_consulta
+* estado_cita
+* bitacora
+
+## Características implementadas
+
+La base de datos incluye:
+
+* Validaciones mediante triggers
+* Control de traslape de horarios
+* Restricciones de citas
+* Sistema de bitácora automática
+* Validación de pertenencia por tenant
+* Control de estados de citas
+* UUIDs almacenados en formato `BINARY(16)`
+
 
 ## Códigos de error de triggers
 
